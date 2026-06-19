@@ -7,6 +7,7 @@ const {
   addSigner,
   getDocumentBySigningToken,
   addSignatureBySigningToken,
+  rejectDocumentBySigningToken,
 } = require("../controllers/signerController");
 const {
     uploadDocument,
@@ -49,6 +50,7 @@ router.get("/", authMiddleware, getDocuments);
 router.get("/:documentId/audit", authMiddleware, getAuditLogs);
 router.get("/sign/:token", getDocumentBySigningToken);
 router.post("/sign/:token/signature", addSignatureBySigningToken);
+router.post("/sign/:token/reject", rejectDocumentBySigningToken);
 router.get("/:id/download", authMiddleware, downloadSignedPdf);
 router.get("/:id", authMiddleware, getDocumentById);
 

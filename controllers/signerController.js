@@ -1,7 +1,13 @@
 const crypto = require("crypto");
 const Document = require("../models/Document");
 const AuditLog = require("../models/AuditLog");
-
+function getIpAddress(req) {
+  return (
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.socket.remoteAddress ||
+    "Unknown"
+  );
+}
 exports.addSigner = async (req, res) => {
   try {
     const { id } = req.params;
@@ -58,6 +64,7 @@ exports.addSigner = async (req, res) => {
       document: document._id,
       user: req.user.id,
       action: `Signer invited: ${normalizedEmail}`,
+      ipAddress: getIpAddress(req),
     });
 
     res.json({
@@ -214,11 +221,12 @@ exports.addSignatureBySigningToken = async (req, res) => {
     }
 
     await document.save();
-	await AuditLog.create({
-  document: document._id,
-  user: document.owner,
-  action: `Document signed by ${normalizedEmail}`,
-});
+    await AuditLog.create({
+      document: document._id,
+      user: document.owner,
+      action: `Document signed by ${normalizedEmail}`,
+      ipAddress: getIpAddress(req),
+    });
 
     res.json({
       success: true,
@@ -233,6 +241,75 @@ exports.addSignatureBySigningToken = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Could not sign the document.",
+    });
+  }
+};
+
+exports.rejectDocumentBySigningToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { signerEmail, reason = "" } = req.body;
+
+    if (!signerEmail || !signerEmail.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Signer email is required.",
+      });
+    }
+
+    if (!reason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Rejection reason is required.",
+      });
+    }
+
+    const document = await Document.findOne({ signingToken: token });
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Invalid signing link.",
+      });
+    }
+
+    const normalizedEmail = signerEmail.trim().toLowerCase();
+
+    const signer = document.signers.find(
+      (item) => item.email.toLowerCase() === normalizedEmail
+    );
+
+    if (!signer) {
+      return res.status(403).json({
+        success: false,
+        message: "This email was not invited to reject the document.",
+      });
+    }
+
+    document.status = "Rejected";
+    document.rejectionReason = reason.trim();
+
+    await document.save();
+
+    await AuditLog.create({
+      document: document._id,
+      user: document.owner,
+      action: `Document rejected by ${normalizedEmail}: ${reason.trim()}`,
+      ipAddress: getIpAddress(req),
+    });
+
+    res.json({
+      success: true,
+      message: "Document rejected successfully.",
+      status: document.status,
+      rejectionReason: document.rejectionReason,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Could not reject document.",
     });
   }
 };

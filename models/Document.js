@@ -68,6 +68,11 @@ const documentSchema = new mongoose.Schema(
             default: "Pending",
         },
 
+        rejectionReason: {
+            type: String,
+            default: "",
+        },
+
         signers: {
             type: [signerSchema],
             default: [],

@@ -1,5 +1,12 @@
 const Document = require("../models/Document");
 const AuditLog = require("../models/AuditLog");
+function getIpAddress(req) {
+    return (
+        req.headers["x-forwarded-for"]?.split(",")[0] ||
+        req.socket.remoteAddress ||
+        "Unknown"
+    );
+}
 
 function isOwner(document, userId) {
     return document.owner && document.owner.toString() === userId;
@@ -64,8 +71,8 @@ exports.addSignature = async (req, res) => {
             document: document._id,
             user: req.user.id,
             action: "Signature added",
+            ipAddress: getIpAddress(req),
         });
-
         res.json({
             success: true,
             message: "Signature added successfully ✍️",
@@ -118,6 +125,7 @@ exports.updateSignature = async (req, res) => {
             document: document._id,
             user: req.user.id,
             action: "Signature moved",
+            ipAddress: getIpAddress(req),
         });
 
         res.json({
@@ -176,6 +184,7 @@ exports.deleteSignature = async (req, res) => {
             document: document._id,
             user: req.user.id,
             action: "Signature deleted",
+            ipAddress: getIpAddress(req),
         });
 
         res.json({

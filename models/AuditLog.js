@@ -18,6 +18,11 @@ const auditLogSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    ipAddress: {
+      type: String,
+      default: "Unknown",
+    },
   },
   {
     timestamps: true,

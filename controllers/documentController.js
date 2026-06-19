@@ -1,6 +1,14 @@
 const Document = require("../models/Document");
 const AuditLog = require("../models/AuditLog");
 
+function getIpAddress(req) {
+    return (
+        req.headers["x-forwarded-for"]?.split(",")[0] ||
+        req.socket.remoteAddress ||
+        "Unknown"
+    );
+}
+
 exports.uploadDocument = async (req, res) => {
     try {
         if (!req.file) {
@@ -20,6 +28,7 @@ exports.uploadDocument = async (req, res) => {
             document: document._id,
             user: req.user.id,
             action: "Document uploaded",
+            ipAddress: getIpAddress(req),
         });
 
         res.status(201).json({
