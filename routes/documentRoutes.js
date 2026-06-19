@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 
 const authMiddleware = require("../middleware/authMiddleware");
+const { getAuditLogs } = require("../controllers/auditController");
 const {
   addSigner,
   getDocumentBySigningToken,
@@ -45,6 +46,7 @@ const fileFilter = function (req, file, cb) {
 const upload = multer({ storage, fileFilter });
 
 router.get("/", authMiddleware, getDocuments);
+router.get("/:documentId/audit", authMiddleware, getAuditLogs);
 router.get("/sign/:token", getDocumentBySigningToken);
 router.post("/sign/:token/signature", addSignatureBySigningToken);
 router.get("/:id/download", authMiddleware, downloadSignedPdf);

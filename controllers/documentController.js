@@ -89,7 +89,7 @@ exports.getDocumentById = async (req, res) => {
                 signatures: document.signatures,
                 signers: document.signers,
             },
-            fileUrl: `http://localhost:5000/uploads/${encodeURIComponent(
+            fileUrl: `${process.env.BACKEND_URL || "http://localhost:5000"}/uploads/${encodeURIComponent(
                 document.filename
             )}`,
         });

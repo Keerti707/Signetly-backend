@@ -64,7 +64,7 @@ exports.addSigner = async (req, res) => {
       success: true,
       message: "Signer added successfully 🎉",
       signers: document.signers,
-      signingLink: `http://localhost:5173/sign/${document.signingToken}`,
+      signingLink: `${process.env.FRONTEND_URL || "http://localhost:5173"}/sign/${document.signingToken}`,
     });
   } catch (error) {
     console.error(error);
@@ -100,7 +100,7 @@ exports.getDocumentBySigningToken = async (req, res) => {
         signatures: document.signatures,
         signers: document.signers,
       },
-      fileUrl: `http://localhost:5000/uploads/${encodeURIComponent(
+      fileUrl: `${process.env.BACKEND_URL || "http://localhost:5000"}/uploads/${encodeURIComponent(
         document.filename
       )}`,
     });
@@ -214,6 +214,11 @@ exports.addSignatureBySigningToken = async (req, res) => {
     }
 
     await document.save();
+	await AuditLog.create({
+  document: document._id,
+  user: document.owner,
+  action: `Document signed by ${normalizedEmail}`,
+});
 
     res.json({
       success: true,
