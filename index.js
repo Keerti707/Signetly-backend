@@ -25,7 +25,7 @@ app.use(
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "🌸 InkFlow Backend is running!",
+    message: "Signetly✨ Backend is running!",
   });
 });
 
