@@ -47,9 +47,9 @@ exports.downloadSignedPdf = async (req, res) => {
           height: 60,
         });
       } else {
-        page.drawText(sig.text, {
-          x: sig.x,
-          y: pageHeight - sig.y,
+        page.drawText(sig.text || "Signed", {
+          x: Math.min(Math.max(sig.x * 0.55, 50), page.getWidth() - 180),
+          y: Math.min(Math.max(pageHeight - sig.y * 0.55, 80), pageHeight - 80),
           size: 18,
           font,
           color: rgb(0.35, 0.1, 0.8),
